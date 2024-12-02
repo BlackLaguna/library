@@ -1,0 +1,23 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    Books\Domain\:
+        resource: '../../../src/Books/Domain/{Service,Repository}'
+
+    Books\Application\:
+        resource: '../../../src/Books/Application/'
+
+    Books\Infrastructure\:
+        resource: '../../../src/Books/Infrastructure/'
+
+#    Books\Framework\Controller\:
+#        resource: '../../../src/Books/Framework/Controller/'
+#        tags: ['controller.service_arguments']
+
+#    Books\Framework\EventSubscriber\ExceptionSubscriber:
+#        tags:
+#            - { name: 'kernel.event_subscriber' }
+

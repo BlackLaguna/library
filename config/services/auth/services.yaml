@@ -1,0 +1,14 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+#    Auth\Domain\:
+#        resource: '../../../src/Auth/Domain/{Service,Repository}'
+#
+#    Auth\Application\:
+#        resource: '../../../src/Auth/Application/'
+
+    Auth\Infrastructure\:
+        resource: '../../../src/Auth/Infrastructure/'

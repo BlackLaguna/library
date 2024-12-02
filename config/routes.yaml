@@ -1,0 +1,5 @@
+#payroll_controller:
+#    resource:
+#        path: ../src/Books/Framework/Controller/
+#        namespace: Books\Framework\Controller
+#    type: attribute
