@@ -7,33 +7,43 @@ namespace Auth\Domain;
 use Auth\Domain\Client\ClientEmail;
 use Auth\Domain\Client\ClientId;
 use Auth\Domain\Client\ClientName;
+use Auth\Domain\Client\ClientPassword;
 use Symfony\Component\Uid\Uuid;
 
 class Client
 {
+    /** @var Role[] */
+    private array $roles;
+
     public function __construct(
-        private ClientId $uuid,
+        private ClientId $id,
         private ClientName $name,
-        private ClientEmail $email,
-        private Password $password,
         Role ...$roles,
     ) {
+        $this->roles = $roles;
     }
 
     public static function createNew(
         ClientName $name,
         ClientEmail $email,
-        Password $password,
+        ClientPassword $password,
     ) {
         $roles[] = Role::USER;
-        $uuid = Uuid::v4();
+        $uuid = ClientId::createNew($email, $password);
 
         return new self(
             ...$roles,
-            uuid: $uuid,
+            id: $uuid,
             name: $name,
-            email: $email,
-            password: $password,
+        );
+    }
+
+    public function hasRole(Role $role): bool
+    {
+        return in_array(
+            needle: $role,
+            haystack: $this->roles,
+            strict: true
         );
     }
 }

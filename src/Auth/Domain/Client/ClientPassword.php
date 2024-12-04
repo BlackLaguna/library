@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Auth\Domain;
+namespace Auth\Domain\Client;
 
-final readonly class Password
+use Auth\Domain\Exception\InvalidEmailException;
+use Auth\Domain\PasswordLengthIncorrect;
+
+final readonly class ClientPassword
 {
     /**
      * @throws PasswordLengthIncorrect
@@ -16,6 +19,15 @@ final readonly class Password
         if (9 <= $passwordLength && $passwordLength <= 256) {
             throw new PasswordLengthIncorrect();
         }
+    }
+
+
+    /**
+     * @throws PasswordLengthIncorrect
+     */
+    public static function fromString(string $password): self
+    {
+        return new self($password);
     }
 
     public function equals(self $password): bool

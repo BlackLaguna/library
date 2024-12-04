@@ -1,5 +1,5 @@
 <?php
-namespace Auth\Infrastructure\Security;
+namespace Auth\Infrastructure\Api\Security;
 
 use Auth\Infrastructure\Doctrine\Entity\Client;
 use Symfony\Component\Security\Core\User\UserInterface;

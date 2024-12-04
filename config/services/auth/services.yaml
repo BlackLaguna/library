@@ -14,4 +14,9 @@ services:
         resource: '../../../src/Auth/Infrastructure/'
 
     security.client_provider:
-        class: Auth\Infrastructure\Security\ClientProvider
+        class: Auth\Infrastructure\Api\Security\ClientProvider
+
+    Auth\Infrastructure\Api\Security\Authenticator\TokenGenerator:
+        arguments:
+            $publicKey: '%env(resolve:JWT_PUBLIC_KEY)%'
+            $privateKey: '%env(resolve:JWT_SECRET_KEY)%'

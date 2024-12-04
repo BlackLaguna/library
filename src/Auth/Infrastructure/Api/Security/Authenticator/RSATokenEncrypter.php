@@ -1,10 +1,11 @@
 <?php
 
-namespace Auth\Application\Authenticator;
+namespace Auth\Infrastructure\Api\Security\Authenticator;
 
+use Auth\Domain\Services\TokenEncrypterService;
 use Exception;
 
-final class TokenGenerator
+final readonly class RSATokenEncrypter implements TokenEncrypterService
 {
     public function __construct(
         private string $publicKey,
@@ -12,9 +13,13 @@ final class TokenGenerator
     ) {
     }
 
+    /**
+     * @throws Exception
+     */
     public function encrypt(string $data): string
     {
         $encrypted = '';
+
         if (!openssl_public_encrypt($data, $encrypted, $this->publicKey)) {
             throw new Exception("Encryption failed.");
         }
@@ -22,12 +27,13 @@ final class TokenGenerator
         return base64_encode($encrypted);
     }
 
-    public function decrypt(string $encryptedData): string
+    public function decrypt(string $token): string
     {
         $decrypted = '';
-        $encryptedData = base64_decode($encryptedData);
 
-        if (!openssl_private_decrypt($encryptedData, $decrypted, $this->privateKey)) {
+        $token = base64_decode($token);
+
+        if (!openssl_private_decrypt($token, $decrypted, $this->privateKey)) {
             throw new Exception("Decryption failed.");
         }
 

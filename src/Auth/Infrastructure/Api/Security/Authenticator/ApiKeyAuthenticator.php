@@ -1,6 +1,6 @@
 <?php
 
-namespace Auth\Application\Authenticator;
+namespace Auth\Infrastructure\Api\Security\Authenticator;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
