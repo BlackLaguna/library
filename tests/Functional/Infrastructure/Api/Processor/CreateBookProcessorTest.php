@@ -2,21 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Books\Infrastructure\Api\Processor;
+namespace Tests\Functional\Infrastructure\Api\Processor;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
-use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Tests\Functional\Shared\AuthApiTestCase;
 use Tests\Utils\TestDB;
 
-class CreateBookProcessorTest extends ApiTestCase
+class CreateBookProcessorTest extends AuthApiTestCase
 {
     public function setUp(): void
     {
         parent::setUp();
-        self::createClient();
-        TestDB::$connection = $this->getContainer()->get(Connection::class);
     }
 
     public function testCreateBook(): void

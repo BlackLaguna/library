@@ -7,7 +7,6 @@ namespace Books\Infrastructure\Doctrine\Entity;
 use Books\Domain\Reservation as DomainReservation;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use SharedKernel\Infrastructure\Doctrine\Entity\BookInterface;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity]
@@ -21,24 +20,24 @@ class Reservation
         #[ORM\ManyToOne(targetEntity: Client::class)]
         #[ORM\JoinColumn(name: 'client_id', referencedColumnName: 'uuid', nullable: false)]
         private Client $client,
-        #[ORM\ManyToOne(targetEntity: BookInterface::class, inversedBy: 'reservations')]
+        #[ORM\ManyToOne(targetEntity: Book::class, inversedBy: 'reservations')]
         #[ORM\JoinColumn(name: 'book_id', referencedColumnName: 'uuid', nullable: false)]
-        private Uuid $bookId,
+        private Book $book,
         #[ORM\Column(type: 'text', length: 32)]
         private string $status,
-        #[ORM\Column(type: 'datetime', nullable: false)]
+        #[ORM\Column(type: 'datetime_immutable', nullable: false)]
         private DateTimeImmutable $dateFrom,
-        #[ORM\Column(type: 'datetime', nullable: false)]
+        #[ORM\Column(type: 'datetime_immutable', nullable: false)]
         private DateTimeImmutable $dateTo,
     ) {
     }
 
-    public static function createFromDomainEntity(DomainReservation $reservation): self
+    public static function createFromDomainEntity(DomainReservation $reservation, Client $client, Book $book): self
     {
         return new self(
             uuid: $reservation->getId()->uuid,
-            client: new Client($reservation->getClientId()->uuid),
-            bookId: $reservation->getBookId()->uuid,
+            client: $client,
+            book: $book,
             status: $reservation->getStatus()->value,
             dateFrom: $reservation->getDateFrom()->date,
             dateTo: $reservation->getDateTo()->date
@@ -55,9 +54,9 @@ class Reservation
         return $this->client;
     }
 
-    public function getBookId(): Uuid
+    public function getBook(): Book
     {
-        return $this->bookId;
+        return $this->book;
     }
 
     public function getDateFrom(): DateTimeImmutable

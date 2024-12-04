@@ -2,21 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Books\Infrastructure\Api\Processor;
+namespace Tests\Functional\Infrastructure\Api\Processor;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
-use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Tests\Functional\Shared\AuthApiTestCase;
 use Tests\Utils\TestDB;
 
-class ReturnBookProcessorTest extends ApiTestCase
+class ReturnBookProcessorTest extends AuthApiTestCase
 {
     public function setUp(): void
     {
         parent::setUp();
-        self::createClient();
-        TestDB::$connection = $this->getContainer()->get(Connection::class);
     }
 
     public function testReturnBook(): void
@@ -33,6 +30,18 @@ class ReturnBookProcessorTest extends ApiTestCase
                 'description' => 'testDescription',
             ]
         );
+        TestDB::insertRecord(
+            'reservations',
+            [
+                'uuid' => 'e28808b6-892b-55dd-a9d5-85f6c7c360c5',
+                'book_id' => 'e28808b6-892b-55dd-a9d5-85f6c7c360c4',
+                'client_id' => AuthApiTestCase::CLIENT_ID,
+                'status' => 'NEW',
+                'date_from' => '2023-12-02 15:45:30',
+                'date_to' => '2023-12-03 15:45:30',
+            ]
+        );
+
 
         $this->getClient()->jsonRequest(
             method: Request::METHOD_POST,
@@ -49,6 +58,17 @@ class ReturnBookProcessorTest extends ApiTestCase
                 'author_first_name' => 'testFirstName',
                 'author_last_name' => 'testLastName',
                 'description' => 'testDescription',
+            ]
+        );
+        TestDB::assertRecordExists(
+            'reservations',
+            [
+                'uuid' => 'e28808b6-892b-55dd-a9d5-85f6c7c360c5',
+                'book_id' => 'e28808b6-892b-55dd-a9d5-85f6c7c360c4',
+                'client_id' => AuthApiTestCase::CLIENT_ID,
+                'status' => 'FINISHED',
+                'date_from' => '2023-12-02 15:45:30',
+                'date_to' => '2023-12-03 15:45:30',
             ]
         );
     }

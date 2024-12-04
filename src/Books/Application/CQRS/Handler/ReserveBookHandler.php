@@ -7,6 +7,9 @@ namespace Books\Application\CQRS\Handler;
 use Books\Application\CQRS\Command\ReserveBookCommand;
 use Books\Domain\Book\BookId;
 use Books\Domain\Client\ClientId;
+use Books\Domain\Exception\BookIsUnavailable;
+use Books\Domain\Exception\ClientAlreadyHasReservation;
+use Books\Domain\Exception\InvalidReservationDateRange;
 use Books\Domain\Repository\BookRepository;
 use Books\Domain\Reservation\ReservationDateFrom;
 use Books\Domain\Reservation\ReservationDateTo;
@@ -20,9 +23,14 @@ readonly class ReserveBookHandler
     {
     }
 
+    /**
+     * @throws BookIsUnavailable
+     * @throws InvalidReservationDateRange
+     * @throws ClientAlreadyHasReservation
+     */
     public function __invoke(ReserveBookCommand $command): void
     {
-        $book = $this->bookRepository->findById(new BookId(Uuid::fromString($command->bookId)));
+        $book = $this->bookRepository->findById(BookId::createFromUuid(Uuid::fromString($command->bookId)));
         $book->reserve(
             ReservationDateFrom::fromInt($command->reserveFrom),
             ReservationDateTo::fromInt($command->reserveTo),

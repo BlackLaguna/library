@@ -2,24 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Books\Infrastructure\Api\Processor;
+namespace Tests\Functional\Infrastructure\Api\Processor;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
-use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Tests\Functional\Shared\AuthApiTestCase;
 use Tests\Utils\TestDB;
 
-class MakeBookUnavailableProcessorTest extends ApiTestCase
+class ReserveBookProcessorTest extends AuthApiTestCase
 {
     public function setUp(): void
     {
         parent::setUp();
-        self::createClient();
-        TestDB::$connection = $this->getContainer()->get(Connection::class);
     }
 
-    public function testChangeBookDescription(): void
+    public function testReserveBook(): void
     {
         TestDB::insertRecord(
             'books',
@@ -36,19 +33,32 @@ class MakeBookUnavailableProcessorTest extends ApiTestCase
 
         $this->getClient()->jsonRequest(
             method: Request::METHOD_POST,
-            uri: '/api/books/e28808b6-892b-55dd-a9d5-85f6c7c360c4/unavailable',
+            uri: '/api/books/e28808b6-892b-55dd-a9d5-85f6c7c360c4/reserve',
+            parameters: [
+                'reserveFrom' => 1,
+                'reserveTo' => 2,
+            ],
         );
-
         static::assertResponseStatusCodeSame(Response::HTTP_CREATED);
         TestDB::assertRecordExists(
             'books',
             [
                 'name' => 'testName',
-                'total_quantity' => 0,
-                'available_quantity' => 0,
+                'total_quantity' => 100,
+                'available_quantity' => 99,
                 'author_first_name' => 'testFirstName',
                 'author_last_name' => 'testLastName',
                 'description' => 'testDescription',
+            ]
+        );
+        TestDB::assertRecordExists(
+            'reservations',
+            [
+                'book_id' => 'e28808b6-892b-55dd-a9d5-85f6c7c360c4',
+                'client_id' => AuthApiTestCase::CLIENT_ID,
+                'status' => 'NEW',
+                'date_from' => '1970-01-01 00:00:01',
+                'date_to' => '1970-01-01 00:00:02',
             ]
         );
     }

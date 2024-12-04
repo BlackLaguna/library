@@ -6,6 +6,10 @@ namespace Books\Domain\Exception;
 
 use Exception;
 
-class AllBooksAlreadyInTheStock extends Exception
+final class AllBooksAlreadyInTheStock extends Exception
 {
+    public function __construct()
+    {
+        parent::__construct("All books already in the stock");
+    }
 }

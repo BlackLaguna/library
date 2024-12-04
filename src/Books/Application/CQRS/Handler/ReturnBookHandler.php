@@ -6,6 +6,9 @@ namespace Books\Application\CQRS\Handler;
 
 use Books\Application\CQRS\Command\ReturnBookCommand;
 use Books\Domain\Book\BookId;
+use Books\Domain\Client\ClientId;
+use Books\Domain\Exception\AllBooksAlreadyInTheStock;
+use Books\Domain\Exception\ClientDontHaveReservation;
 use Books\Domain\Repository\BookRepository;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Uid\Uuid;
@@ -17,10 +20,14 @@ readonly class ReturnBookHandler
     {
     }
 
+    /**
+     * @throws ClientDontHaveReservation
+     * @throws AllBooksAlreadyInTheStock
+     */
     public function __invoke(ReturnBookCommand $command): void
     {
         $book = $this->bookRepository->findById(new BookId(Uuid::fromString($command->bookId)));
-        $book->return();
+        $book->return(ClientId::fromUuid(Uuid::fromString($command->clientId)));
         $this->bookRepository->update($book);
     }
 }

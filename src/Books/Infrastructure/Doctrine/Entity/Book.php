@@ -10,12 +10,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ReadableCollection;
 use Doctrine\ORM\Mapping as ORM;
-use SharedKernel\Infrastructure\Doctrine\Entity\BookInterface;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'books')]
-class Book implements BookInterface
+class Book
 {
     public function __construct(
         #[ORM\Id]
@@ -33,7 +32,7 @@ class Book implements BookInterface
         private string $authorFirstName,
         #[ORM\Column(type: 'string', length: 255, nullable: false)]
         private string $authorLastName,
-        #[ORM\OneToMany(mappedBy: 'bookId', targetEntity: Reservation::class, cascade: ['PERSIST', 'REMOVE'], fetch: 'EAGER', indexBy: 'uuid')]
+        #[ORM\OneToMany(mappedBy: 'book', targetEntity: Reservation::class, cascade: ['REMOVE'], fetch: 'EXTRA_LAZY', indexBy: 'uuid')]
         private Collection $reservations = new ArrayCollection(),
     ) {
     }
@@ -48,10 +47,6 @@ class Book implements BookInterface
             availableQuantity: $book->getAvailableQuantity()->availableQuantity,
             authorFirstName: $book->getAuthor()->firstName,
             authorLastName: $book->getAuthor()->lastName,
-            reservations: new ArrayCollection(array_map(
-                static fn (DomainReservation $reservation) => Reservation::createFromDomainEntity($reservation),
-                $book->getReservations(),
-            )),
         );
     }
 
@@ -64,10 +59,11 @@ class Book implements BookInterface
         $this->availableQuantity = $book->getAvailableQuantity()->availableQuantity;
         $this->authorFirstName = $book->getAuthor()->firstName;
         $this->authorLastName = $book->getAuthor()->lastName;
-        $this->reservations = new ArrayCollection(array_map(
-            static fn (DomainReservation $reservation) => Reservation::createFromDomainEntity($reservation),
-            $book->getReservations(),
-        ));
+    }
+
+    public function setReservations(Collection $reservations): void
+    {
+        $this->reservations = $reservations;
     }
 
     public function getId(): Uuid

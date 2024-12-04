@@ -13,6 +13,7 @@ use Books\Domain\Book\TotalQuantity;
 use Books\Domain\Client\ClientId;
 use Books\Domain\Exception\AllBooksAlreadyInTheStock;
 use Books\Domain\Exception\BookIsUnavailable;
+use Books\Domain\Exception\ClientAlreadyHasReservation;
 use Books\Domain\Exception\ClientDontHaveReservation;
 use Books\Domain\Exception\InvalidReservationDateRange;
 use Books\Domain\Exception\NotAllBooksReturned;
@@ -33,7 +34,7 @@ class Book
         private AvailableQuantity $availableQuantity,
         private TotalQuantity $totalQuantity,
         private Author $author,
-        Reservation ...$reservations,
+        array $reservations,
     ) {
         $this->reservations = $reservations;
     }
@@ -54,6 +55,7 @@ class Book
             availableQuantity: $availableQuantity,
             totalQuantity: $totalQuantity,
             author: $author,
+            reservations: [],
         );
     }
 
@@ -86,11 +88,18 @@ class Book
     /**
      * @throws BookIsUnavailable
      * @throws InvalidReservationDateRange
+     * @throws ClientAlreadyHasReservation
      */
     public function reserve(ReservationDateFrom $dateFrom, ReservationDateTo $dateTo, ClientId $clientId): void
     {
         if (0 === $this->availableQuantity->availableQuantity) {
             throw new BookIsUnavailable();
+        }
+
+        foreach ($this->reservations as $reservation) {
+            if ($reservation->getClientId()->equals($clientId)) {
+                throw new ClientAlreadyHasReservation();
+            }
         }
 
         $this->availableQuantity = AvailableQuantity::formInt($this->availableQuantity->availableQuantity - 1);
@@ -123,6 +132,7 @@ class Book
             throw new AllBooksAlreadyInTheStock();
         }
 
+        $clientReservation->changeStatus(ReservationStatus::FINISHED);
         $this->availableQuantity = AvailableQuantity::formInt($this->availableQuantity->availableQuantity + 1);
     }
 

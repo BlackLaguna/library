@@ -7,8 +7,11 @@ services:
 #    Auth\Domain\:
 #        resource: '../../../src/Auth/Domain/{Service,Repository}'
 #
-#    Auth\Application\:
-#        resource: '../../../src/Auth/Application/'
+    Auth\Application\:
+        resource: '../../../src/Auth/Application/'
 
     Auth\Infrastructure\:
         resource: '../../../src/Auth/Infrastructure/'
+
+    security.client_provider:
+        class: Auth\Infrastructure\Security\ClientProvider

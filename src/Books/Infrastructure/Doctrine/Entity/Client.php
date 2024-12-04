@@ -18,4 +18,9 @@ class Client implements BookInterface
         private Uuid $uuid,
     ) {
     }
+
+    public function getId(): Uuid
+    {
+        return $this->uuid;
+    }
 }

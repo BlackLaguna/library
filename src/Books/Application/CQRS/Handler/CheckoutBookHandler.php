@@ -6,6 +6,7 @@ namespace Books\Application\CQRS\Handler;
 
 use Books\Application\CQRS\Command\CheckoutBookCommand;
 use Books\Domain\Book\BookId;
+use Books\Domain\Client\ClientId;
 use Books\Domain\Repository\BookRepository;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Uid\Uuid;
@@ -20,7 +21,7 @@ readonly class CheckoutBookHandler
     public function __invoke(CheckoutBookCommand $command): void
     {
         $book = $this->bookRepository->findById(new BookId(Uuid::fromString($command->bookId)));
-        $book->checkout();
+        $book->checkout(ClientId::fromUuid(Uuid::fromString($command->clientId)));
         $this->bookRepository->update($book);
     }
 }

@@ -23,10 +23,14 @@ final class CheckoutBookProcessor implements ProcessorInterface
             throw new UnexpectedValueException();
         }
 
+        $bookId = $uriVariables['uuid'];
+        $clientId = '6229d52f-1fff-4092-ae12-3bf3e408e1c5';
+
         $this->commandBus->dispatch(
             new CheckoutBookCommand(
-                $
+                bookId: $bookId,
+                clientid: $clientId,
             )
-        )
+        );
     }
 }

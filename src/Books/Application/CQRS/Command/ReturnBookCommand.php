@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Books\Application\CQRS\Command;
 
-class ReturnBookCommand
+final readonly class ReturnBookCommand
 {
     public function __construct(
-        public readonly string $bookId,
+        public string $bookId,
+        public string $clientId,
     ) {
     }
 }

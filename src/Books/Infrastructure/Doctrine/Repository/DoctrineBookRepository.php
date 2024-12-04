@@ -32,36 +32,46 @@ final readonly class DoctrineBookRepository implements BookRepository
     public function findById(BookId $bookId): Book
     {
         $bookEntity = $this->entityManager->find(BookEntity::class, (string) $bookId->uuid);
+        $reservations = $this->entityManager->createQueryBuilder()
+            ->select('reservation')
+            ->from(ReservationEntity::class, 'reservation')
+            ->where('reservation.book = :book')
+            ->andWhere('reservation.status IN (:reservationStatuses)')
+            ->setParameters([
+                'book' => $bookEntity,
+                'reservationStatuses' => [ReservationStatus::NEW, ReservationStatus::ACTIVE],
+            ])
+            ->getQuery()
+            ->execute();
 
         if (null === $bookEntity) {
             throw new NotFoundHttpException();
         }
 
-        $this->entityManager->clear();
-
         $reservations = array_map(static fn (ReservationEntity $reservationEntity) => new Reservation(
                 id: ReservationId::fromUuid($reservationEntity->getId()),
-                bookId: BookId::createFromUuid($reservationEntity->getBookId()),
+                bookId: BookId::createFromUuid($reservationEntity->getBook()->getId()),
                 dateFrom: ReservationDateFrom::fromInt($reservationEntity->getDateFrom()->getTimestamp()),
                 dateTo: ReservationDateTo::fromInt($reservationEntity->getDateTo()->getTimestamp()),
-                clientId: ClientId::fromUuid($reservationEntity->getClientId()),
+                clientId: ClientId::fromUuid($reservationEntity->getClient()->getId()),
                 status: ReservationStatus::from($reservationEntity->getStatus()),
-        ), $bookEntity->getReservations()->toArray());
+        ), $reservations);
 
         return new Book(
-            ...$reservations,
             id: BookId::createFromUuid($bookEntity->getId()),
             name: Name::fromString($bookEntity->getName()),
             description: Description::fromString($bookEntity->getDescription()),
             availableQuantity: AvailableQuantity::formInt($bookEntity->getAvailableQuantity()),
             totalQuantity: TotalQuantity::fromInt($bookEntity->getTotalQuantity()),
             author: Author::fromString($bookEntity->getAuthorFirstName(), $bookEntity->getAuthorLastName()),
+            reservations: $reservations,
         );
     }
 
     public function save(Book $book): void
     {
         $bookEntity = BookEntity::createFromDomainBook($book);
+
         $this->entityManager->persist($bookEntity);
         $this->entityManager->flush();
     }
@@ -74,8 +84,52 @@ final readonly class DoctrineBookRepository implements BookRepository
             throw new NotFoundHttpException();
         }
 
+        $this->entityManager->beginTransaction();
+
         $bookEntity->updateFromDomainBook($book);
 
-        $this->entityManager->flush();
+        $this->entityManager->createQueryBuilder()
+            ->update(BookEntity::class, 'book')
+            ->set('book.name', ':name')
+            ->set('book.description', ':description')
+            ->set('book.availableQuantity', ':availableQuantity')
+            ->set('book.totalQuantity', ':totalQuantity')
+            ->set('book.authorFirstName', ':authorFirstName')
+            ->set('book.authorLastName', ':authorLastName')
+            ->where('book.uuid = :uuid')
+            ->setParameters([
+                'uuid' => (string) $bookEntity->getId(),
+                'name' => $bookEntity->getName(),
+                'description' => $bookEntity->getDescription(),
+                'availableQuantity' => $bookEntity->getAvailableQuantity(),
+                'totalQuantity' => $bookEntity->getTotalQuantity(),
+                'authorFirstName' => $bookEntity->getAuthorFirstName(),
+                'authorLastName' => $bookEntity->getAuthorLastName(),
+            ])
+            ->getQuery()
+            ->execute();
+
+        foreach ($book->getReservations() as $reservation) {
+            $statement =
+                'INSERT INTO reservations (uuid, book_id, client_id, status, date_from, date_to)
+                VALUES (:uuid, :book_id, :client_id, :status, :date_from, :date_to)
+                ON CONFLICT (uuid) DO UPDATE SET
+                book_id = EXCLUDED.book_id,
+                client_id = EXCLUDED.client_id,
+                status = EXCLUDED.status,
+                date_from = EXCLUDED.date_from,
+                date_to = EXCLUDED.date_to;'
+            ;
+            $this->entityManager->getConnection()->executeStatement($statement, [
+                'uuid' => (string) $reservation->getId()->uuid,
+                'book_id' => (string) $reservation->getBookId()->uuid,
+                'client_id' => (string) $reservation->getClientId()->uuid,
+                'status' => $reservation->getStatus()->value,
+                'date_from' => $reservation->getDateFrom()->date->format('Y-m-d H:i:s'),
+                'date_to' => $reservation->getDateTo()->date->format('Y-m-d H:i:s'),
+            ]);
+        }
+
+        $this->entityManager->commit();
     }
 }
