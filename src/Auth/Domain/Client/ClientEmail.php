@@ -26,4 +26,9 @@ final readonly class ClientEmail
     {
         return new self($email);
     }
+
+    public function equals(ClientEmail $email): bool
+    {
+        return $this->email === $email->email;
+    }
 }

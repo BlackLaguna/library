@@ -11,13 +11,13 @@ use Books\Infrastructure\Api\Resource\Request\CreateBookRequest;
 use Symfony\Component\Messenger\MessageBusInterface;
 use UnexpectedValueException;
 
-final class CreateBookProcessor implements ProcessorInterface
+final readonly class CreateBookProcessor implements ProcessorInterface
 {
-    public function __construct(private readonly MessageBusInterface $commandBus)
+    public function __construct(private MessageBusInterface $commandBus)
     {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         if (!($data instanceof CreateBookRequest)) {
             throw new UnexpectedValueException();

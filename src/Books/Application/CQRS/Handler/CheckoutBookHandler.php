@@ -21,7 +21,7 @@ readonly class CheckoutBookHandler
     public function __invoke(CheckoutBookCommand $command): void
     {
         $book = $this->bookRepository->findById(new BookId(Uuid::fromString($command->bookId)));
-        $book->checkout(ClientId::fromUuid(Uuid::fromString($command->clientId)));
+        $book->checkout(ClientId::fromString($command->clientId));
         $this->bookRepository->update($book);
     }
 }

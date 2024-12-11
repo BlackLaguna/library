@@ -16,6 +16,7 @@ use Books\Domain\Exception\BookIsUnavailable;
 use Books\Domain\Exception\ClientAlreadyHasReservation;
 use Books\Domain\Exception\ClientDontHaveReservation;
 use Books\Domain\Exception\InvalidReservationDateRange;
+use Books\Domain\Exception\InvalidReservationTimeException;
 use Books\Domain\Exception\NotAllBooksReturned;
 use Books\Domain\Reservation\ReservationDateFrom;
 use Books\Domain\Reservation\ReservationDateTo;
@@ -89,11 +90,16 @@ class Book
      * @throws BookIsUnavailable
      * @throws InvalidReservationDateRange
      * @throws ClientAlreadyHasReservation
+     * @throws InvalidReservationTimeException
      */
     public function reserve(ReservationDateFrom $dateFrom, ReservationDateTo $dateTo, ClientId $clientId): void
     {
         if (0 === $this->availableQuantity->availableQuantity) {
             throw new BookIsUnavailable();
+        }
+
+        if ($dateTo->date->getTimestamp() < time()) {
+            throw new InvalidReservationTimeException();
         }
 
         foreach ($this->reservations as $reservation) {

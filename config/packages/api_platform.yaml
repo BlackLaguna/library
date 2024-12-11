@@ -12,3 +12,6 @@ api_platform:
     formats:
         jsonld: ['application/ld+json']
         json: ['application/json']
+    collection:
+        pagination:
+            page_parameter_name: page

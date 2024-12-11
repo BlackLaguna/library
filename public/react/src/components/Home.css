@@ -1,0 +1,32 @@
+/* Home.css */
+.welcome-message {
+    color: #4caf50;
+    font-size: 36px;
+    text-align: center;
+    margin-top: 20px;
+}
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 16px;
+}
+
+.book-card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 16px;
+}
+
+.pagination button {
+    margin: 0 8px;
+}

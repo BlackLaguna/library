@@ -6,39 +6,41 @@ namespace Auth\Infrastructure\Api\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use Auth\Application\CQRS\Command\RegisterClientCommand;
+use Auth\Application\CQRS\Query\GetClientTokenForUserQuery;
+use Auth\Domain\Client\ClientToken as DomainClientToken;
 use Auth\Infrastructure\Api\Resource\Request\RegisterRequest;
-use Auth\Infrastructure\Doctrine\Entity\Client;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
-use Symfony\Component\Uid\Uuid;
+use Auth\Infrastructure\Api\Resource\Response\ClientToken;
+use SharedKernel\Application\Bus\QueryBus;
+use Symfony\Component\Messenger\MessageBusInterface;
 use UnexpectedValueException;
-
-//use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 
 final readonly class RegisterProcessor implements ProcessorInterface
 {
     public function __construct(
-//        private PasswordHasherInterface $hasher,
-        private EntityManagerInterface $entityManager,
-        private UserAuthenticatorInterface $authenticator
+        private MessageBusInterface $commandBus,
+        private QueryBus $queryBus,
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ClientToken
     {
         if (!($data instanceof RegisterRequest)) {
             throw new UnexpectedValueException();
         }
 
-        $hashedPassword = $this->hasher->hash($data->password);
-        $client = new Client(
-            uuid: Uuid::v4(),
-            name: $data->name,
+        $this->commandBus->dispatch(new RegisterClientCommand(
             email: $data->email,
-            password: $hashedPassword,
-            roles: ['ROLE_CLIENT'],
-        );
-        $this->entityManager->persist($client);
-        $this->authenticator->authenticateUser($client);
+            password: $data->password,
+            name: $data->name,
+        ));
+
+        /** @var DomainClientToken $clientToken */
+        $clientToken = $this->queryBus->dispatch(new GetClientTokenForUserQuery(
+            email: $data->email,
+            password: $data->password,
+        ));
+
+        return new ClientToken($clientToken->token);
     }
 }

@@ -67,7 +67,7 @@ class BookTest extends TestCase
         $book->reserve(
             $reservationDateFrom = ReservationDateFrom::fromInt(1),
             $reservationDateTo = ReservationDateTo::fromInt(2),
-            $clientId = ClientId::fromUuid(Uuid::v4()),
+            $clientId = ClientId::fromString('test@mail.com'),
         );
 
         static::assertEquals($totalQuantity - 1, $book->getAvailableQuantity()->availableQuantity);
@@ -88,7 +88,7 @@ class BookTest extends TestCase
         $book->reserve(
             ReservationDateFrom::fromInt(1),
             ReservationDateTo::fromInt(2),
-            ClientId::fromUuid(Uuid::v4()),
+            ClientId::fromString('test@mail.com'),
         );
     }
 
@@ -110,7 +110,7 @@ class BookTest extends TestCase
         $book->reserve(
             ReservationDateFrom::fromInt(1),
             ReservationDateTo::fromInt(2),
-            $clientId = ClientId::fromUuid(Uuid::v4()),
+            $clientId = ClientId::fromString('test@mail.com'),
         );
 
         $book->return($clientId);
@@ -124,7 +124,7 @@ class BookTest extends TestCase
         $book = $this->getBookInstance(totalQuantity: $totalQuantity);
 
         static::expectException(ClientDontHaveReservation::class);
-        $book->return(ClientId::fromUuid(Uuid::v4()));
+        $book->return(ClientId::fromString('test@mail.com'));
     }
 
     private function getBookInstance(int $totalQuantity, string $description = 'test'): Book

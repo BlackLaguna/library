@@ -2,15 +2,20 @@
 
 namespace Auth\Infrastructure\Api\Security\Authenticator;
 
-use Auth\Domain\Services\TokenEncrypterService;
+use Auth\Domain\Service\TokenEncrypterService;
 use Exception;
 
-final readonly class RSATokenEncrypter implements TokenEncrypterService
+final readonly class RsaTokenEncrypter implements TokenEncrypterService
 {
+    private string $publicKey;
+    private string $privateKey;
+
     public function __construct(
-        private string $publicKey,
-        private string $privateKey,
+        string $publicKey,
+        string $privateKey,
     ) {
+        $this->publicKey = file_get_contents($publicKey);
+        $this->privateKey = file_get_contents($privateKey);
     }
 
     /**

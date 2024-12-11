@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Books\Infrastructure\Doctrine\Entity;
 
-use Books\Domain\Reservation as DomainReservation;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
@@ -16,12 +15,12 @@ class Reservation
     public function __construct(
         #[ORM\Id]
         #[ORM\Column(type: 'uuid')]
-        private Uuid $uuid,
+        private Uuid $id,
         #[ORM\ManyToOne(targetEntity: Client::class)]
-        #[ORM\JoinColumn(name: 'client_id', referencedColumnName: 'uuid', nullable: false)]
+        #[ORM\JoinColumn(name: 'client_id', referencedColumnName: 'email', nullable: false)]
         private Client $client,
         #[ORM\ManyToOne(targetEntity: Book::class, inversedBy: 'reservations')]
-        #[ORM\JoinColumn(name: 'book_id', referencedColumnName: 'uuid', nullable: false)]
+        #[ORM\JoinColumn(name: 'book_id', referencedColumnName: 'id', nullable: false)]
         private Book $book,
         #[ORM\Column(type: 'text', length: 32)]
         private string $status,
@@ -32,21 +31,9 @@ class Reservation
     ) {
     }
 
-    public static function createFromDomainEntity(DomainReservation $reservation, Client $client, Book $book): self
-    {
-        return new self(
-            uuid: $reservation->getId()->uuid,
-            client: $client,
-            book: $book,
-            status: $reservation->getStatus()->value,
-            dateFrom: $reservation->getDateFrom()->date,
-            dateTo: $reservation->getDateTo()->date
-        );
-    }
-
     public function getId(): Uuid
     {
-        return $this->uuid;
+        return $this->id;
     }
 
     public function getClient(): Client

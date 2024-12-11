@@ -8,7 +8,7 @@ use Symfony\Component\Uid\Uuid;
 
 readonly class BookId
 {
-    public function __construct(public Uuid $uuid)
+    public function __construct(public Uuid $id)
     {
     }
 
@@ -19,6 +19,6 @@ readonly class BookId
 
     public function equals(BookId $id): bool
     {
-        return $this->uuid->equals($id);
+        return $this->id->equals($id);
     }
 }

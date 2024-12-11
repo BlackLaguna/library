@@ -22,6 +22,7 @@ use Books\Infrastructure\Doctrine\Entity\Book as BookEntity;
 use Books\Infrastructure\Doctrine\Entity\Reservation as ReservationEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Uid\Uuid;
 
 final readonly class DoctrineBookRepository implements BookRepository
 {
@@ -31,7 +32,7 @@ final readonly class DoctrineBookRepository implements BookRepository
 
     public function findById(BookId $bookId): Book
     {
-        $bookEntity = $this->entityManager->find(BookEntity::class, (string) $bookId->uuid);
+        $bookEntity = $this->entityManager->find(BookEntity::class, (string) $bookId->id);
         $reservations = $this->entityManager->createQueryBuilder()
             ->select('reservation')
             ->from(ReservationEntity::class, 'reservation')
@@ -50,15 +51,15 @@ final readonly class DoctrineBookRepository implements BookRepository
 
         $reservations = array_map(static fn (ReservationEntity $reservationEntity) => new Reservation(
                 id: ReservationId::fromUuid($reservationEntity->getId()),
-                bookId: BookId::createFromUuid($reservationEntity->getBook()->getId()),
+                bookId: BookId::createFromUuid(Uuid::fromString($reservationEntity->getBook()->getId())),
                 dateFrom: ReservationDateFrom::fromInt($reservationEntity->getDateFrom()->getTimestamp()),
                 dateTo: ReservationDateTo::fromInt($reservationEntity->getDateTo()->getTimestamp()),
-                clientId: ClientId::fromUuid($reservationEntity->getClient()->getId()),
+                clientId: ClientId::fromString($reservationEntity->getClient()->getId()),
                 status: ReservationStatus::from($reservationEntity->getStatus()),
         ), $reservations);
 
         return new Book(
-            id: BookId::createFromUuid($bookEntity->getId()),
+            id: BookId::createFromUuid(Uuid::fromString($bookEntity->getId())),
             name: Name::fromString($bookEntity->getName()),
             description: Description::fromString($bookEntity->getDescription()),
             availableQuantity: AvailableQuantity::formInt($bookEntity->getAvailableQuantity()),
@@ -78,7 +79,7 @@ final readonly class DoctrineBookRepository implements BookRepository
 
     public function update(Book $book): void
     {
-        $bookEntity = $this->entityManager->find(BookEntity::class, (string) $book->getId()->uuid);
+        $bookEntity = $this->entityManager->find(BookEntity::class, (string) $book->getId()->id);
 
         if (null === $bookEntity) {
             throw new NotFoundHttpException();
@@ -96,9 +97,9 @@ final readonly class DoctrineBookRepository implements BookRepository
             ->set('book.totalQuantity', ':totalQuantity')
             ->set('book.authorFirstName', ':authorFirstName')
             ->set('book.authorLastName', ':authorLastName')
-            ->where('book.uuid = :uuid')
+            ->where('book.id = :id')
             ->setParameters([
-                'uuid' => (string) $bookEntity->getId(),
+                'id' => (string) $bookEntity->getId(),
                 'name' => $bookEntity->getName(),
                 'description' => $bookEntity->getDescription(),
                 'availableQuantity' => $bookEntity->getAvailableQuantity(),
@@ -111,9 +112,9 @@ final readonly class DoctrineBookRepository implements BookRepository
 
         foreach ($book->getReservations() as $reservation) {
             $statement =
-                'INSERT INTO reservations (uuid, book_id, client_id, status, date_from, date_to)
-                VALUES (:uuid, :book_id, :client_id, :status, :date_from, :date_to)
-                ON CONFLICT (uuid) DO UPDATE SET
+                'INSERT INTO reservations (id, book_id, client_id, status, date_from, date_to)
+                VALUES (:id, :book_id, :client_id, :status, :date_from, :date_to)
+                ON CONFLICT (id) DO UPDATE SET
                 book_id = EXCLUDED.book_id,
                 client_id = EXCLUDED.client_id,
                 status = EXCLUDED.status,
@@ -121,9 +122,9 @@ final readonly class DoctrineBookRepository implements BookRepository
                 date_to = EXCLUDED.date_to;'
             ;
             $this->entityManager->getConnection()->executeStatement($statement, [
-                'uuid' => (string) $reservation->getId()->uuid,
-                'book_id' => (string) $reservation->getBookId()->uuid,
-                'client_id' => (string) $reservation->getClientId()->uuid,
+                'id' => (string) $reservation->getId()->uuid,
+                'book_id' => (string) $reservation->getBookId()->id,
+                'client_id' => $reservation->getClientId()->email,
                 'status' => $reservation->getStatus()->value,
                 'date_from' => $reservation->getDateFrom()->date->format('Y-m-d H:i:s'),
                 'date_to' => $reservation->getDateTo()->date->format('Y-m-d H:i:s'),

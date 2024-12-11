@@ -10,4 +10,9 @@ final readonly class ClientName
         public string $name,
     ) {
     }
+
+    public static function fromString(string $name): self
+    {
+        return new self($name);
+    }
 }

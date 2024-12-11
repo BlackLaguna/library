@@ -7,18 +7,21 @@ namespace Books\Infrastructure\Api\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Books\Application\CQRS\Command\ReturnBookCommand;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 final readonly class ReturnBookProcessor implements ProcessorInterface
 {
-    public function __construct(private MessageBusInterface $commandBus)
-    {
+    public function __construct(
+        private MessageBusInterface $commandBus,
+        private Security $security,
+    ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
-        $bookId = $uriVariables['uuid'];
-        $clientId = '6229d52f-1fff-4092-ae12-3bf3e408e1c5';
+        $bookId = $uriVariables['id'];
+        $clientId = $this->security->getUser()->getUserIdentifier();
 
         $this->commandBus->dispatch(new ReturnBookCommand($bookId, $clientId));
     }

@@ -4,9 +4,9 @@ services:
         autoconfigure: true
         public: false
 
-#    Auth\Domain\:
-#        resource: '../../../src/Auth/Domain/{Service,Repository}'
-#
+    Auth\Domain\:
+        resource: '../../../src/Auth/Domain/'
+
     Auth\Application\:
         resource: '../../../src/Auth/Application/'
 
@@ -16,7 +16,7 @@ services:
     security.client_provider:
         class: Auth\Infrastructure\Api\Security\ClientProvider
 
-    Auth\Infrastructure\Api\Security\Authenticator\TokenGenerator:
+    Auth\Infrastructure\Api\Security\Authenticator\RsaTokenEncrypter:
         arguments:
             $publicKey: '%env(resolve:JWT_PUBLIC_KEY)%'
             $privateKey: '%env(resolve:JWT_SECRET_KEY)%'

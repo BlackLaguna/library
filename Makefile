@@ -8,9 +8,9 @@ test:
 	php bin/phpunit
 
 run:
-	composer install --no-interaction
-	php bin/console --env=dev doctrine:database:create --if-not-exists
-	php bin/console --env=dev doctrine:migration:migrate --no-interaction
+#	composer install --no-interaction
+#	php bin/console --env=dev doctrine:database:create --if-not-exists
+#	php bin/console --env=dev doctrine:migration:migrate --no-interaction
 
 up:
 	docker compose up -d

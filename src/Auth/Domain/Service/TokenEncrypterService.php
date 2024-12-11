@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Auth\Domain\Services;
+namespace Auth\Domain\Service;
 
 interface TokenEncrypterService
 {

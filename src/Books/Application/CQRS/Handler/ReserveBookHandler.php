@@ -10,6 +10,7 @@ use Books\Domain\Client\ClientId;
 use Books\Domain\Exception\BookIsUnavailable;
 use Books\Domain\Exception\ClientAlreadyHasReservation;
 use Books\Domain\Exception\InvalidReservationDateRange;
+use Books\Domain\Exception\InvalidReservationTimeException;
 use Books\Domain\Repository\BookRepository;
 use Books\Domain\Reservation\ReservationDateFrom;
 use Books\Domain\Reservation\ReservationDateTo;
@@ -27,6 +28,7 @@ readonly class ReserveBookHandler
      * @throws BookIsUnavailable
      * @throws InvalidReservationDateRange
      * @throws ClientAlreadyHasReservation
+     * @throws InvalidReservationTimeException
      */
     public function __invoke(ReserveBookCommand $command): void
     {
@@ -34,7 +36,7 @@ readonly class ReserveBookHandler
         $book->reserve(
             ReservationDateFrom::fromInt($command->reserveFrom),
             ReservationDateTo::fromInt($command->reserveTo),
-            ClientId::fromUuid(Uuid::fromString($command->clientId)),
+            ClientId::fromString($command->clientId),
         );
         $this->bookRepository->update($book);
     }

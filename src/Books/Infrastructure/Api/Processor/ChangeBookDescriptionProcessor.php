@@ -11,20 +11,20 @@ use Books\Infrastructure\Api\Resource\Request\ChangeBookDescriptionRequest;
 use Symfony\Component\Messenger\MessageBusInterface;
 use UnexpectedValueException;
 
-final class ChangeBookDescriptionProcessor implements ProcessorInterface
+final readonly class ChangeBookDescriptionProcessor implements ProcessorInterface
 {
-    public function __construct(private readonly MessageBusInterface $commandBus)
+    public function __construct(private MessageBusInterface $commandBus)
     {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         if (!($data instanceof ChangeBookDescriptionRequest)) {
             throw new UnexpectedValueException();
         }
 
         $this->commandBus->dispatch(new ChangeBookDescriptionCommand(
-            $uriVariables['uuid'],
+            $uriVariables['id'],
             $data->newDescription,
         ));
     }

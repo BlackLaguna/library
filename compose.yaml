@@ -28,16 +28,16 @@ services:
     depends_on:
       - postgres
 
-#  front:
-#    image: node
-#    volumes:
-#      - ./public/vue/:/usr/src/app
-#    command: "make up"
-#    working_dir: /usr/src/app
-#    ports:
-#      - "3000:3000"
-#    networks:
-#      - default
+  front:
+    image: node
+    volumes:
+      - ./public/react/:/usr/src/app
+    command: "make up"
+    working_dir: /usr/src/app
+    ports:
+      - "3000:3000"
+    networks:
+      - default
 
   postgres:
     image: postgres:15-alpine

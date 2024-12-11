@@ -27,7 +27,7 @@ readonly class ReturnBookHandler
     public function __invoke(ReturnBookCommand $command): void
     {
         $book = $this->bookRepository->findById(new BookId(Uuid::fromString($command->bookId)));
-        $book->return(ClientId::fromUuid(Uuid::fromString($command->clientId)));
+        $book->return(ClientId::fromString($command->clientId));
         $this->bookRepository->update($book);
     }
 }

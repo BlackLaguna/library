@@ -6,7 +6,6 @@ namespace Books\Infrastructure\Doctrine\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use SharedKernel\Infrastructure\Doctrine\Entity\BookInterface;
-use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'book_clients')]
@@ -14,13 +13,13 @@ class Client implements BookInterface
 {
     public function __construct(
         #[ORM\Id]
-        #[ORM\Column(type: 'uuid')]
-        private Uuid $uuid,
+        #[ORM\Column(type: 'text')]
+        private string $email,
     ) {
     }
 
-    public function getId(): Uuid
+    public function getId(): string
     {
-        return $this->uuid;
+        return $this->email;
     }
 }

@@ -16,7 +16,7 @@ final readonly class ClientPassword
     {
         $passwordLength = mb_strlen($this->password);
 
-        if (9 <= $passwordLength && $passwordLength <= 256) {
+        if (!(6 <= $passwordLength && $passwordLength <= 2048)) {
             throw new PasswordLengthIncorrect();
         }
     }

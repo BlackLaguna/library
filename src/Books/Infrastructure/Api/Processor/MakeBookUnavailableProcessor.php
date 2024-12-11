@@ -17,13 +17,13 @@ final readonly class MakeBookUnavailableProcessor implements ProcessorInterface
     {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         if (!($data instanceof MakeBookUnavailableRequest)) {
             throw new UnexpectedValueException();
         }
 
-        $bookId = $uriVariables['uuid'];
+        $bookId = $uriVariables['id'];
         $this->commandBus->dispatch(new MakeBookUnavailableCommand($bookId));
     }
 }

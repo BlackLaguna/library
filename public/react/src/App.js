@@ -1,64 +1,39 @@
-import React, { useState, useMemo } from "react";
-import ProductTable from "./components/ProductTable";
-import ProductForm from "./components/ProductForm";
-import Summary from "./components/Summary";
+import React from 'react';
+import './App.css';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import AuthForm from './components/AuthForm';
+import Home from './components/Home';
+import BookDetails from './components/BookDetails';
+import Navbar from './components/Navbar';
 
 const App = () => {
-  const [products, setProducts] = useState([
-    { id: 1, name: "Produkt 1", price: 10, color: "#f28b82", quantity: 0 },
-    { id: 2, name: "Produkt 2", price: 20, color: "#fbbc04", quantity: 0 },
-    { id: 3, name: "Produkt 3", price: 30, color: "#34a853", quantity: 0 },
-    { id: 4, name: "Produkt 4", price: 40, color: "#4285f4", quantity: 0 },
-    { id: 5, name: "Produkt 5", price: 50, color: "#9c27b0", quantity: 0 },
-    { id: 6, name: "Produkt 6", price: 60, color: "#ff7043", quantity: 0 },
-  ]);
+    const token = localStorage.getItem('token');
 
-  const [filterSelected, setFilterSelected] = useState(false);
-  const [sortKey, setSortKey] = useState("id");
-
-  const filteredProducts = useMemo(() => {
-    const filtered = filterSelected
-      ? products.filter((p) => p.quantity > 0)
-      : products;
-    return filtered.sort((a, b) =>
-      typeof a[sortKey] === "number"
-        ? a[sortKey] - b[sortKey]
-        : a[sortKey].localeCompare(b[sortKey])
+    return (
+        <Router>
+            <Navbar />  {}
+            <Routes>
+                {!token ? (
+                    <>
+                        <Route path="/login" element={<AuthForm />} />
+                        <Route path="/register" element={<AuthForm />} />
+                        <Route path="*" element={<Navigate to="/login" />} />  {}
+                    </>
+                ) : (
+                    <>
+                        <Route path="/home" element={<Home />} />
+                        <Route path="/book/:id" element={<PrivateRoute component={BookDetails} />} />
+                        <Route path="*" element={<Navigate to="/home" />} />  {}
+                    </>
+                )}
+            </Routes>
+        </Router>
     );
-  }, [products, filterSelected, sortKey]);
+};
 
-  const handleAddProduct = (newProduct) => {
-    setProducts([...products, { ...newProduct, quantity: 0 }]);
-  };
-
-  const handleUpdateProduct = (id, change) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, quantity: Math.max(0, p.quantity + change) } : p
-      )
-    );
-  };
-
-  const handleRemoveProduct = (id) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  return (
-    <div style={{ padding: "20px" }}>
-      <h1>Zarządzanie produktami</h1>
-      <button onClick={() => setFilterSelected((prev) => !prev)}>
-        {filterSelected ? "Pokaż wszystkie" : "Pokaż tylko wybrane"}
-      </button>
-      <ProductForm onAddProduct={handleAddProduct} />
-      <ProductTable
-        products={filteredProducts}
-        onUpdateProduct={handleUpdateProduct}
-        onRemoveProduct={handleRemoveProduct}
-        setSortKey={setSortKey}
-      />
-      <Summary products={products} />
-    </div>
-  );
+const PrivateRoute = ({ component: Component }) => {
+    const token = localStorage.getItem('token');
+    return token ? <Component /> : <Navigate to="/login" />;
 };
 
 export default App;

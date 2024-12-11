@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Books\Infrastructure\Doctrine\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use Books\Domain\Book as DomainBook;
-use Books\Domain\Reservation as DomainReservation;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ReadableCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'books')]
@@ -19,7 +18,8 @@ class Book
     public function __construct(
         #[ORM\Id]
         #[ORM\Column(type: 'uuid')]
-        private Uuid $uuid,
+        #[ApiProperty(identifier: true)]
+        private string $id,
         #[ORM\Column(type: 'string', length: 255, nullable: false)]
         private string $name,
         #[ORM\Column(type: 'text', nullable: false)]
@@ -32,7 +32,7 @@ class Book
         private string $authorFirstName,
         #[ORM\Column(type: 'string', length: 255, nullable: false)]
         private string $authorLastName,
-        #[ORM\OneToMany(mappedBy: 'book', targetEntity: Reservation::class, cascade: ['REMOVE'], fetch: 'EXTRA_LAZY', indexBy: 'uuid')]
+        #[ORM\OneToMany(mappedBy: 'book', targetEntity: Reservation::class, cascade: ['REMOVE'], fetch: 'EXTRA_LAZY', indexBy: 'id')]
         private Collection $reservations = new ArrayCollection(),
     ) {
     }
@@ -40,7 +40,7 @@ class Book
     public static function createFromDomainBook(DomainBook $book): self
     {
         return new self(
-            uuid: $book->getId()->uuid,
+            id: (string) $book->getId()->id,
             name: $book->getName()->name,
             description: $book->getDescription()->description,
             totalQuantity: $book->getTotalQuantity()->totalQuantity,
@@ -52,7 +52,7 @@ class Book
 
     public function updateFromDomainBook(DomainBook $book): void
     {
-        $this->uuid = $book->getId()->uuid;
+        $this->id = (string) $book->getId()->id;
         $this->name = $book->getName()->name;
         $this->description = $book->getDescription()->description;
         $this->totalQuantity = $book->getTotalQuantity()->totalQuantity;
@@ -66,9 +66,9 @@ class Book
         $this->reservations = $reservations;
     }
 
-    public function getId(): Uuid
+    public function getId(): string
     {
-        return $this->uuid;
+        return $this->id;
     }
 
     public function getAuthorFirstName(): string

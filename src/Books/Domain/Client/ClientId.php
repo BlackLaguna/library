@@ -8,17 +8,17 @@ use Symfony\Component\Uid\Uuid;
 
 final readonly class ClientId
 {
-    private function __construct(public Uuid $uuid)
+    private function __construct(public string $email)
     {
     }
 
-    public static function fromUuid(Uuid $uuid): self
+    public static function fromString(string $email): self
     {
-        return new self($uuid);
+        return new self($email);
     }
 
     public function equals(self $clientId): bool
     {
-        return $this->uuid->equals($clientId->uuid);
+        return $this->email === $clientId->email;
     }
 }
